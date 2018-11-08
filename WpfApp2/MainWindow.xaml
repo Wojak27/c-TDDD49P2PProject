@@ -7,9 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button x:Name="SendMessage" Content="Send message" HorizontalAlignment="Left" Margin="73,327,0,0" VerticalAlignment="Top" Width="87" Click="SendMessage_Click"/>
-        <TextBox x:Name="messageBox" HorizontalAlignment="Left" Height="23" Margin="165,324,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="receivedText" HorizontalAlignment="Left" Height="31" Margin="110,35,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="481" TextChanged="receivedText_TextChanged"/>
+        <Button x:Name="SendMessage" Content="Send message" HorizontalAlignment="Left" Margin="123,399,0,0" VerticalAlignment="Top" Width="87" Click="SendMessage_Click"/>
+        <TextBox x:Name="messageBox" HorizontalAlignment="Left" Height="33" Margin="216,386,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="576"/>
+        <ListBox x:Name="conversationBox" HorizontalAlignment="Left" Height="381" Margin="216,0,0,0" VerticalAlignment="Top" Width="576"/>
+        <Button x:Name="imageButton" Content="Send Image" HorizontalAlignment="Left" Margin="123,374,0,0" VerticalAlignment="Top" Width="75" Click="imageButton_Click"/>
 
     </Grid>
 </Window>

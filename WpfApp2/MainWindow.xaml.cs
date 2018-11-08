@@ -15,8 +15,12 @@ using System.Windows.Shapes;
 using System.Threading;
 using System.ComponentModel;
 
+using System.Windows;
+using System.Windows.Media.Imaging;
+
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Win32;
 
 namespace WpfApp2
 {
@@ -26,12 +30,17 @@ namespace WpfApp2
     public partial class MainWindow : Window
     {
 
+        //for local testing
+        //string serverIP = "localhost";
+        //string clientIP = "localhost";
         string serverIP = "localhost";
+        string clientIP = "localhost";
         int port = 8080;
 
         public MainWindow()
         {
             InitializeComponent();
+            conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
 
             ThreadStart childref = new ThreadStart(CallToChildThread);
             Console.WriteLine("In Main: Creating the Child thread");
@@ -47,7 +56,7 @@ namespace WpfApp2
         {
             Console.WriteLine("Child thread starts");
 
-            IPAddress ip = Dns.GetHostEntry("localhost").AddressList[0];
+            IPAddress ip = Dns.GetHostEntry(clientIP).AddressList[0];
             TcpListener server = new TcpListener(ip, 8080);
             TcpClient client = default(TcpClient);
 
@@ -73,11 +82,25 @@ namespace WpfApp2
 
                 stream.Read(receivedBuffer, 0, receivedBuffer.Length);
 
-                string msg = Encoding.ASCII.GetString(receivedBuffer, 0, receivedBuffer.Length);
-                Console.WriteLine(msg);
+                StringBuilder msg = new StringBuilder();
+
+                foreach(byte b in receivedBuffer)
+                {
+                    if (b.Equals(00))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        msg.Append(Convert.ToChar(b).ToString());
+                    }
+                }
+                String message = msg.ToString();
+                
+                Console.WriteLine(message);
                 this.Dispatcher.Invoke(() =>
                 {
-                    updateTextBox(msg);
+                    updateConversationBox(message);
                 });
                 Console.Read();
             }
@@ -100,13 +123,36 @@ namespace WpfApp2
             client.Close();
 
         }
-        private void updateTextBox(String text)
+        private void updateConversationBox(String text)
         {
-            receivedText.Text = text;
+            TextMessageBox newMessage = new TextMessageBox();
+            newMessage.setText(text);
+            conversationBox.Items.Add(newMessage);
         }
         private void receivedText_TextChanged(object sender, TextChangedEventArgs e)
         {
 
+        }
+
+        private void loadImage()
+        {
+            OpenFileDialog op = new OpenFileDialog();
+            op.Title = "Select a picture";
+            op.Filter = "All supported graphics|*.jpg;*.jpeg;*.png|" +
+              "JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
+              "Portable Network Graphic (*.png)|*.png";
+
+            if (op.ShowDialog() == true)
+            {
+                ImageMessageBox messageBox = new ImageMessageBox();
+                messageBox.setInMessageImage(new BitmapImage(new Uri(op.FileName)));
+                conversationBox.Items.Add(messageBox);
+            }
+        }
+
+        private void imageButton_Click(object sender, RoutedEventArgs e)
+        {
+            loadImage();
         }
     }
 }
