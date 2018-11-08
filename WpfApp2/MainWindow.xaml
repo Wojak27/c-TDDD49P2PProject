@@ -1,0 +1,15 @@
+﻿<Window x:Class="WpfApp2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp2"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Button x:Name="SendMessage" Content="Send message" HorizontalAlignment="Left" Margin="73,327,0,0" VerticalAlignment="Top" Width="87" Click="SendMessage_Click"/>
+        <TextBox x:Name="messageBox" HorizontalAlignment="Left" Height="23" Margin="165,324,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="receivedText" HorizontalAlignment="Left" Height="31" Margin="110,35,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="481" TextChanged="receivedText_TextChanged"/>
+
+    </Grid>
+</Window>
