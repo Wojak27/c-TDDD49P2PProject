@@ -34,16 +34,17 @@ namespace WpfApp2
     {
 
         //for local testing
-        //string serverIP = "localhost";
-        //string clientIP = "localhost";
-        string serverIP = "fe80::1c12:2b95:36eb:d807%5";
         string clientIP = "10.0.0.6";
+        string hostIP = "localhost";
+        //string hostIP = "localhost";
+
         int portClient = 8080;
         int portHost = 8080;
 
         public MainWindow()
         {
             InitializeComponent();
+            //hostIP = GetLocalIPAddress();
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
 
             ThreadStart childref = new ThreadStart(CallToChildThread);
@@ -54,6 +55,11 @@ namespace WpfApp2
             Console.WriteLine(GetLocalIPAddress());
 
         }
+        /*
+        private string GetLocalIPAddress()
+        {
+            return Dns.GetHostEntry(hostIP).AddressList[0].ToString();
+        }*/
 
         public static string GetLocalIPAddress()
         {
@@ -72,7 +78,7 @@ namespace WpfApp2
         {
             Console.WriteLine("Child thread starts");
 
-            IPAddress ip = Dns.GetHostEntry(clientIP).AddressList[0];
+            IPAddress ip = Dns.GetHostEntry(hostIP).AddressList[0];
             TcpListener server = new TcpListener(ip, portHost);
             TcpClient client = default(TcpClient);
 
@@ -116,7 +122,7 @@ namespace WpfApp2
 
         private void sendText(String objectToSend)
         {
-            TcpClient client = new TcpClient(serverIP, portClient);
+            TcpClient client = new TcpClient(clientIP, portClient);
 
             int byteCount = Encoding.ASCII.GetByteCount(objectToSend.ToString());
             MessageItem messageItem = new MessageItem();
@@ -281,7 +287,7 @@ namespace WpfApp2
                 //messageBox.setInMessageImage(new BitmapImage(new Uri(op.FileName)));
                 //conversationBox.Items.Add(messageBox);
                 Bitmap bitmap = BitmapImage2Bitmap(new BitmapImage(new Uri(op.FileName)));
-                TcpClient client = new TcpClient(serverIP, portClient);
+                TcpClient client = new TcpClient(clientIP, portClient);
 
                 byte[] sendData = ImageToByte(bitmap);
 
@@ -323,8 +329,15 @@ namespace WpfApp2
 
         private void myIPMenuButton_Click(object sender, RoutedEventArgs e)
         {
+            YourIPDialog ipDialog = new YourIPDialog(GetLocalIPAddress());
+            ipDialog.Show();
+        }
+
+        private void connectToNewIpMenuButton_Click(object sender, RoutedEventArgs e)
+        {
             NewIPDialog ipDialog = new NewIPDialog();
             ipDialog.Show();
+
         }
     }
 }

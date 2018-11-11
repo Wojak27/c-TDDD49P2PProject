@@ -11,7 +11,7 @@
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem x:Name="connectToNewIpMenuButton" Header="_Connect to new IP"/>
+                <MenuItem x:Name="connectToNewIpMenuButton" Header="_Connect to new IP" Click="connectToNewIpMenuButton_Click"/>
                 <MenuItem x:Name="myIPMenuButton" Header="MyIP" Click="myIPMenuButton_Click"/>
 
             </Menu>
