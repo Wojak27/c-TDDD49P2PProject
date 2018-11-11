@@ -36,9 +36,10 @@ namespace WpfApp2
         //for local testing
         //string serverIP = "localhost";
         //string clientIP = "localhost";
-        string serverIP = "localhost";
-        string clientIP = "localhost";
-        int port = 8080;
+        string serverIP = "10.0.2.15";
+        string clientIP = "10.0.2.15";
+        int portClient = 8080;
+        int portHost = 8079;
 
         public MainWindow()
         {
@@ -50,9 +51,21 @@ namespace WpfApp2
             Thread childThread = new Thread(childref);
             childThread.Start();
 
-           
+            Console.WriteLine(GetLocalIPAddress());
 
+        }
 
+        public static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
         public void CallToChildThread()
@@ -60,7 +73,7 @@ namespace WpfApp2
             Console.WriteLine("Child thread starts");
 
             IPAddress ip = Dns.GetHostEntry(clientIP).AddressList[0];
-            TcpListener server = new TcpListener(ip, 8080);
+            TcpListener server = new TcpListener(ip, portHost);
             TcpClient client = default(TcpClient);
 
             try
