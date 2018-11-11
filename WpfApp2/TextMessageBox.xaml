@@ -7,7 +7,7 @@
     <Grid Margin="0,0,45,0">
         <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="45" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="460"/>
         <Image x:Name="imageBox" HorizontalAlignment="Left" Height="45" Margin="400,0,-60,0" VerticalAlignment="Top" Width="45">
-            <Image.Source>C:\Users\Windows1\source\repos\WpfApp2\WpfApp2\userIcon.png</Image.Source>
+            <Image.Source>userIcon.png</Image.Source>
         </Image>
 
     </Grid>

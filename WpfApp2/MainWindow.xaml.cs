@@ -36,10 +36,10 @@ namespace WpfApp2
         //for local testing
         //string serverIP = "localhost";
         //string clientIP = "localhost";
-        string serverIP = "10.0.2.15";
-        string clientIP = "10.0.2.15";
+        string serverIP = "fe80::1c12:2b95:36eb:d807%5";
+        string clientIP = "10.0.0.6";
         int portClient = 8080;
-        int portHost = 8079;
+        int portHost = 8080;
 
         public MainWindow()
         {
@@ -81,6 +81,7 @@ namespace WpfApp2
                 server.Start();
                 Console.WriteLine("Server started...");
                 Console.Read();
+
             }
             catch (Exception e)
             {
@@ -90,8 +91,8 @@ namespace WpfApp2
 
             while (true)
             {
-                
                 client = server.AcceptTcpClient();
+                Console.WriteLine("Client connected with IP {0}", client.Client.RemoteEndPoint.AddressFamily);
 
                 byte[] receivedBuffer = new byte[100];
                 NetworkStream stream = client.GetStream();
@@ -115,7 +116,7 @@ namespace WpfApp2
 
         private void sendText(String objectToSend)
         {
-            TcpClient client = new TcpClient(serverIP, port);
+            TcpClient client = new TcpClient(serverIP, portClient);
 
             int byteCount = Encoding.ASCII.GetByteCount(objectToSend.ToString());
             MessageItem messageItem = new MessageItem();
@@ -280,7 +281,7 @@ namespace WpfApp2
                 //messageBox.setInMessageImage(new BitmapImage(new Uri(op.FileName)));
                 //conversationBox.Items.Add(messageBox);
                 Bitmap bitmap = BitmapImage2Bitmap(new BitmapImage(new Uri(op.FileName)));
-                TcpClient client = new TcpClient(serverIP, port);
+                TcpClient client = new TcpClient(serverIP, portClient);
 
                 byte[] sendData = ImageToByte(bitmap);
 
@@ -318,6 +319,12 @@ namespace WpfApp2
         {
             Console.WriteLine("Image button click");
             sendImage();
+        }
+
+        private void myIPMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            NewIPDialog ipDialog = new NewIPDialog();
+            ipDialog.Show();
         }
     }
 }

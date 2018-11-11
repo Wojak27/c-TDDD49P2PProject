@@ -64,6 +64,9 @@
     <Compile Include="ImageMessageBox.xaml.cs">
       <DependentUpon>ImageMessageBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NewIPDialog.xaml.cs">
+      <DependentUpon>NewIPDialog.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -81,6 +84,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImageMessageBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NewIPDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
