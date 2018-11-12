@@ -24,6 +24,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Drawing;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections;
 
 namespace WpfApp2
 {
@@ -32,6 +33,8 @@ namespace WpfApp2
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ArrayList addresses = new ArrayList();
+        private ArrayList conversationList = new ArrayList();
 
         //for local testing
         string clientIP = "10.0.0.6";
@@ -44,7 +47,14 @@ namespace WpfApp2
         public MainWindow()
         {
             InitializeComponent();
-            //hostIP = GetLocalIPAddress();
+            var t1 = new TextMessageBox("you", "Hello");
+            var t2 = new TextMessageBox("you", "Hello1");
+            var t3 = new TextMessageBox("you", "Hello2");
+            conversationList.Add(t1);
+            conversationList.Add(t2);
+            conversationList.Add(t3);
+            hostIP = GetLocalIPAddress();
+            //conversationBox.ItemsSource = conversationList;
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
 
             ThreadStart childref = new ThreadStart(CallToChildThread);
@@ -55,11 +65,13 @@ namespace WpfApp2
             Console.WriteLine(GetLocalIPAddress());
 
         }
-        /*
-        private string GetLocalIPAddress()
+
+        //for real ipv6 address
+        
+        private string GetLocalIPV6Address()
         {
             return Dns.GetHostEntry(hostIP).AddressList[0].ToString();
-        }*/
+        }
 
         public static string GetLocalIPAddress()
         {
@@ -98,20 +110,59 @@ namespace WpfApp2
             while (true)
             {
                 client = server.AcceptTcpClient();
-                Console.WriteLine("Client connected with IP {0}", client.Client.RemoteEndPoint.AddressFamily);
-
-                byte[] receivedBuffer = new byte[100];
-                NetworkStream stream = client.GetStream();
-
-                stream.Read(receivedBuffer, 0, receivedBuffer.Length);
-
-                
-                
-                this.Dispatcher.Invoke(() =>
+                string address = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+                Console.WriteLine("Client connected with IP {0}", ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
+                if (!addresses.Contains(address))
                 {
-                    updateConversationBox(receivedBuffer);
-                });
-                Console.Read();
+                    showConnectionRequestDialogBox(address);
+                }
+                else
+                {
+                    byte[] receivedBuffer = new byte[100];
+                    NetworkStream stream = client.GetStream();
+
+                    stream.Read(receivedBuffer, 0, receivedBuffer.Length);
+
+
+
+                    this.Dispatcher.Invoke(() =>
+                    {
+
+                        updateConversationBox(receivedBuffer, address);
+                    });
+                    Console.Read();
+                }
+                
+            }
+        }
+
+        private void showConnectionRequestDialogBox(string address)
+        {
+            string messageBoxText = "Do you want to accept the request from "+ address+"?";
+            string caption = "New Connection request";
+            MessageBoxButton button = MessageBoxButton.YesNoCancel;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+
+            // Display message box
+            MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button, icon);
+
+            // Process message box results
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    addresses.Add(address);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        contactList.Items.Add(address);
+                    });
+                    
+                    break;
+                case MessageBoxResult.No:
+                    
+                    break;
+                case MessageBoxResult.Cancel:
+                    
+                    break;
             }
         }
         private void SendMessage_Click(object sender, RoutedEventArgs e)
@@ -126,7 +177,7 @@ namespace WpfApp2
 
             int byteCount = Encoding.ASCII.GetByteCount(objectToSend.ToString());
             MessageItem messageItem = new MessageItem();
-            messageItem.setMessageText(messageBox.Text);
+           // messageItem.setMessageText(messageBox.Text);
 
             //byte[] sendData = ObjectToByteArray(messageItem);
             byte[] sendData = Encoding.ASCII.GetBytes(messageBox.Text);
@@ -138,7 +189,7 @@ namespace WpfApp2
             stream.Close();
             client.Close();
         }
-        private void updateConversationBox(byte[] bytes)
+        private void updateConversationBox(byte[] bytes, string address)
         {
             Console.WriteLine("Started updating");
             if (IsValidImage(bytes))
@@ -163,9 +214,9 @@ namespace WpfApp2
             }
             else
             {
-                TextMessageBox newMessage = new TextMessageBox();
+                TextMessageBox newMessage = new TextMessageBox(address, bytesToText(bytes));
                 //newMessage.setText(((MessageItem)ByteArrayToObject(bytes)).getMessageText());
-                newMessage.setText(bytesToText(bytes));
+                //conversationList.Add(newMessage);
                 conversationBox.Items.Add(newMessage);
                 Console.WriteLine("Doesn't have image");
             }
@@ -329,7 +380,7 @@ namespace WpfApp2
 
         private void myIPMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            YourIPDialog ipDialog = new YourIPDialog(GetLocalIPAddress());
+            YourIPDialog ipDialog = new YourIPDialog(GetLocalIPV6Address());
             ipDialog.Show();
         }
 
@@ -337,6 +388,11 @@ namespace WpfApp2
         {
             NewIPDialog ipDialog = new NewIPDialog();
             ipDialog.Show();
+
+        }
+
+        private void contactList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
         }
     }

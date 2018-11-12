@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,12 +19,17 @@ namespace WpfApp2
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class TextMessageBox : UserControl
+    public partial class TextMessageBox : UserControl, INotifyPropertyChanged
     {
-        public TextMessageBox()
+        public TextMessageBox(string fromUser, string messageText)
         {
             InitializeComponent();
+            user.Text = fromUser;
+            textBox.Text = messageText;
         }
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public void setText(String text)
         {
@@ -43,6 +49,11 @@ namespace WpfApp2
         public Image getImage()
         {
             return imageBox;
+        }
+
+        private void textBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }

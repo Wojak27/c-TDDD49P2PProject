@@ -57,7 +57,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="MessageItem.cs" />
+    <Compile Include="Model\BindableBase.cs" />
+    <Compile Include="Model\MessagesModelView.cs" />
+    <Compile Include="Model\MessageItem.cs" />
     <Compile Include="TextMessageBox.xaml.cs">
       <DependentUpon>TextMessageBox.xaml</DependentUpon>
     </Compile>
