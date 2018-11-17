@@ -16,11 +16,15 @@
 
             </Menu>
             <Grid>
-                <Button x:Name="SendMessage" Content="Send message" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="102" Click="SendMessage_Click" Margin="111,362,0,0" Height="33"/>
-                <ListBox x:Name="conversationBox" ScrollViewer.CanContentScroll="False" HorizontalAlignment="Right" Height="362"  VerticalAlignment="Top" Width="576" Margin="0,0,10,0" ItemsSource="{Binding Path=TextMessageBox}"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="43*"/>
+                    <ColumnDefinition Width="225*"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="SendMessage" Content="Send message" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="102" Click="SendMessage_Click" Margin="111,362,0,0" Height="33" Grid.ColumnSpan="2"/>
+                <ListBox x:Name="conversationBox" ScrollViewer.CanContentScroll="False" HorizontalAlignment="Right" Height="362"  VerticalAlignment="Top" Width="576" Margin="0,0,10,0" ItemsSource="{Binding Path=TextMessageBox}" Grid.Column="1"/>
                 <Button x:Name="imageButton" Content="Send Image" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="96" Click="imageButton_Click" Margin="10,362,0,0" Height="33"/>
-                <TextBox x:Name="messageBox" HorizontalAlignment="Right" Height="33"  TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="576" Margin="0,362,10,0"/>
-                <ListBox x:Name="contactList" HorizontalAlignment="Left" Height="326" Margin="10,31,0,0" VerticalAlignment="Top" Width="189" SelectionChanged="contactList_SelectionChanged"/>
+                <TextBox x:Name="messageBox" HorizontalAlignment="Right" Height="33"  TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="576" Margin="0,362,10,0" Grid.Column="1"/>
+                <ListBox x:Name="contactList" HorizontalAlignment="Left" Height="326" Margin="10,31,0,0" VerticalAlignment="Top" Width="189" SelectionChanged="contactList_SelectionChanged" Grid.ColumnSpan="2"/>
                 <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="My contacts:" VerticalAlignment="Top"/>
 
             </Grid>

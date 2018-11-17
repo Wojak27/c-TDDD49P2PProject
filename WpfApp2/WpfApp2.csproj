@@ -38,6 +38,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,50 +54,49 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
+    <ApplicationDefinition Include="Components\App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\BindableBase.cs" />
-    <Compile Include="Model\MessagesModelView.cs" />
+    <Compile Include="Model\Utilities.cs" />
     <Compile Include="Model\MessageItem.cs" />
-    <Compile Include="TextMessageBox.xaml.cs">
+    <Compile Include="Components\TextMessageBox.xaml.cs">
       <DependentUpon>TextMessageBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImageMessageBox.xaml.cs">
+    <Compile Include="Components\ImageMessageBox.xaml.cs">
       <DependentUpon>ImageMessageBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="NewIPDialog.xaml.cs">
+    <Compile Include="Components\NewIPDialog.xaml.cs">
       <DependentUpon>NewIPDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="YourIPDialog.xaml.cs">
+    <Compile Include="Components\YourIPDialog.xaml.cs">
       <DependentUpon>YourIPDialog.xaml</DependentUpon>
     </Compile>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Components\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
+    <Compile Include="Components\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Components\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="TextMessageBox.xaml">
+    <Page Include="Components\TextMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ImageMessageBox.xaml">
+    <Page Include="Components\ImageMessageBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="NewIPDialog.xaml">
+    <Page Include="Components\NewIPDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="YourIPDialog.xaml">
+    <Page Include="Components\YourIPDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -129,6 +129,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="userIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tools\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Components\userIcon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -12,10 +12,19 @@ namespace WpfApp2
     [Serializable]
     public class MessageItem
     {
+        private string _image;
 
         public string UserName { get; set; }
         public string MessageText { get; set; }
         public string MessageTime { get; set; }
+        public string Image { get { return _image; } set { _image = value; } }
+
+
+        public bool hasImage()
+        {
+            return _image == null ? false : true;
+        }
         
     }
+
 }

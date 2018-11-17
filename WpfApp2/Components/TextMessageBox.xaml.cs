@@ -26,6 +26,7 @@ namespace WpfApp2
             InitializeComponent();
             user.Text = fromUser;
             textBox.Text = messageText;
+            Console.WriteLine("Height: ");
         }
 
 

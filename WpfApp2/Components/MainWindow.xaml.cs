@@ -22,9 +22,11 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Win32;
 using System.IO;
-using System.Drawing;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
+using System.Collections.ObjectModel;
+using WpfApp2.Model;
+using Image = System.Drawing.Image;
 
 namespace WpfApp2
 {
@@ -34,15 +36,14 @@ namespace WpfApp2
     public partial class MainWindow : Window
     {
         private ArrayList addresses = new ArrayList();
-        private ArrayList conversationList = new ArrayList();
+        private ObservableCollection<Object> conversationList = new ObservableCollection<Object>();
 
         //for local testing
-        string clientIP = "10.0.0.6";
+        string clientIP = "localhost";
         string hostIP = "localhost";
         //string hostIP = "localhost";
 
-        int portClient = 8080;
-        int portHost = 8080;
+        int port = 8080;
 
         public MainWindow()
         {
@@ -53,14 +54,24 @@ namespace WpfApp2
             conversationList.Add(t1);
             conversationList.Add(t2);
             conversationList.Add(t3);
-            hostIP = GetLocalIPAddress();
-            //conversationBox.ItemsSource = conversationList;
+            //hostIP = GetLocalIPAddress();
+            conversationBox.ItemsSource = conversationList;
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
 
             ThreadStart childref = new ThreadStart(CallToChildThread);
             Console.WriteLine("In Main: Creating the Child thread");
             Thread childThread = new Thread(childref);
             childThread.Start();
+
+            MessageItem testItem = new MessageItem();
+            Image newImage = Image.FromFile(@"C:\Users\Windows1\source\repos\WpfApp2\WpfApp2\Components\userIcon.png");
+            testItem.MessageText = "Hello World";
+            testItem.Image = (Utilities.imageToBase64(newImage));
+            string jsonTestItem = Utilities.convertMessageItemToJSON(testItem);
+            Console.WriteLine("json item: " + jsonTestItem);
+            MessageItem testItemRetrieved = Utilities.convertJSONToMessageItem(jsonTestItem);
+            Console.WriteLine("Retrieved item: " + testItemRetrieved.MessageText);
+            Console.WriteLine("Image item: " + testItemRetrieved.hasImage());
 
             Console.WriteLine(GetLocalIPAddress());
 
@@ -88,10 +99,10 @@ namespace WpfApp2
 
         public void CallToChildThread()
         {
-            Console.WriteLine("Child thread starts");
 
             IPAddress ip = Dns.GetHostEntry(hostIP).AddressList[0];
-            TcpListener server = new TcpListener(ip, portHost);
+            hostIP = ip.ToString();
+            TcpListener server = new TcpListener(ip, port);
             TcpClient client = default(TcpClient);
 
             try
@@ -118,13 +129,11 @@ namespace WpfApp2
                 }
                 else
                 {
-                    byte[] receivedBuffer = new byte[100];
+                    byte[] receivedBuffer = new byte[10000000];
                     NetworkStream stream = client.GetStream();
 
                     stream.Read(receivedBuffer, 0, receivedBuffer.Length);
-
-
-
+                    
                     this.Dispatcher.Invoke(() =>
                     {
 
@@ -167,35 +176,63 @@ namespace WpfApp2
         }
         private void SendMessage_Click(object sender, RoutedEventArgs e)
         {
-            sendText(messageBox.Text);
+            MessageItem messageItem = new MessageItem();
+            messageItem.MessageText = messageBox.Text;
+            messageItem.UserName = this.hostIP;
+            sendMessage(messageItem);
             messageBox.Text = "";
         }
 
-        private void sendText(String objectToSend)
+        private void sendMessage(MessageItem messageItem)
         {
-            TcpClient client = new TcpClient(clientIP, portClient);
+            Console.WriteLine("client ip: "+ clientIP);
+            try
+            {
+                TcpClient client = new TcpClient(clientIP, port);
 
-            int byteCount = Encoding.ASCII.GetByteCount(objectToSend.ToString());
-            MessageItem messageItem = new MessageItem();
-           // messageItem.setMessageText(messageBox.Text);
+                var jsonObjectToSend = Utilities.convertMessageItemToJSON(messageItem);
+                Console.WriteLine("json to send: " + jsonObjectToSend);
+                byte[] sendData = Utilities.stringToBytes(jsonObjectToSend);
+                //byte[] sendData = Encoding.ASCII.GetBytes(messageBox.Text);
 
-            //byte[] sendData = ObjectToByteArray(messageItem);
-            byte[] sendData = Encoding.ASCII.GetBytes(messageBox.Text);
+                NetworkStream stream = client.GetStream();
+                Console.WriteLine("byte len sent: " + sendData.Length);
+                stream.Write(sendData, 0, sendData.Length);
 
-            NetworkStream stream = client.GetStream();
+                stream.Close();
+                client.Close();
+            }
+            catch(Exception e)
+            {
+                showNoValidIPDialogBox();
+            }
+           
+        }
 
-            stream.Write(sendData, 0, sendData.Length);
+        private void showNoValidIPDialogBox()
+        {
+            string messageBoxText = "Given IP is invalid! Try adding new IP";
+            string caption = "No IP found";
+            MessageBoxButton button = MessageBoxButton.OK;
 
-            stream.Close();
-            client.Close();
+            MessageBoxImage icon = MessageBoxImage.Warning;
+
+            // Display message box
+            MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button, icon);
         }
         private void updateConversationBox(byte[] bytes, string address)
         {
-            Console.WriteLine("Started updating");
-            if (IsValidImage(bytes))
-            {
-                BitmapSource image;
 
+            Console.WriteLine("byte len recieved: " + bytes.Length);
+            var json = Utilities.bytesToString(bytes);
+            Console.WriteLine(json);
+            var message = Utilities.convertJSONToMessageItem(json);
+
+            Console.WriteLine("Started updating");
+            Console.WriteLine("Message image: "+ message.Image);
+            if (message.hasImage())
+            {
+                Image image = Utilities.Base64ToImage(message.Image);
                 /*using (MemoryStream ms = new MemoryStream(bytes))
                 {
                     var decoder = BitmapDecoder.Create(ms,
@@ -203,124 +240,30 @@ namespace WpfApp2
                     image =  decoder.Frames[0];
                 }*/
 
-                Stream stream = new MemoryStream(bytes);
-                var img = Bitmap.FromStream(stream);
                 ImageMessageBox messageBox = new ImageMessageBox();
-                BitmapImage bitmapImage = BitmapToImageSource((Bitmap)img);
-                messageBox.setInMessageImage(bitmapImage);
-                conversationBox.Items.Add(messageBox);
+                BitmapSource source = Utilities.GetImageStream(image);
+                messageBox.setInMessageImage(source);
+                conversationList.Add(messageBox);
+                //conversationBox.Items.Add(messageBox);
                 Console.Write("Have image");
 
             }
             else
             {
-                TextMessageBox newMessage = new TextMessageBox(address, bytesToText(bytes));
-                //newMessage.setText(((MessageItem)ByteArrayToObject(bytes)).getMessageText());
-                //conversationList.Add(newMessage);
-                conversationBox.Items.Add(newMessage);
+                TextMessageBox newMessage = new TextMessageBox(address, message.MessageText);
+                conversationList.Add(newMessage);
                 Console.WriteLine("Doesn't have image");
             }
             conversationBox.SelectedIndex = conversationBox.Items.Count - 1;
             conversationBox.ScrollIntoView(conversationBox.SelectedItem);
 
         }
-
-        private byte[] ObjectToByteArray(object obj)
-        {
-            if (obj == null)
-                return null;
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
-            {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
-            }
-        }
-
-        private BitmapImage BitmapFromSource(BitmapSource bitmapsource)
-        {
-            Console.WriteLine("bitmapsource" + bitmapsource.ToString());
-            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-            MemoryStream memoryStream = new MemoryStream();
-            BitmapImage bImg = new BitmapImage();
-
-            encoder.Frames.Add(BitmapFrame.Create(bitmapsource));
-            encoder.Save(memoryStream);
-
-            memoryStream.Position = 0;
-            bImg.BeginInit();
-            bImg.StreamSource = memoryStream;
-            bImg.EndInit();
-
-            memoryStream.Close();
-
-            return bImg;
-        }
-
-        private BitmapImage BitmapToImageSource(Bitmap bitmap)
-        {
-            using (MemoryStream memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-                memory.Position = 0;
-                BitmapImage bitmapimage = new BitmapImage();
-                bitmapimage.BeginInit();
-                bitmapimage.StreamSource = memory;
-                bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapimage.EndInit();
-
-                return bitmapimage;
-            }
-        }
-
-
-        private static String bytesToText(byte[] bytes)
-        {
-            StringBuilder msg = new StringBuilder();
-
-            foreach (byte b in bytes)
-            {
-                if (b.Equals(00))
-                {
-                    break;
-                }
-                else
-                {
-                    msg.Append(Convert.ToChar(b).ToString());
-                }
-            }
-            return msg.ToString();
-        }
-
-
-        public static bool IsValidImage(byte[] bytes)
-        {
-            try
-            {
-                Stream stream = new MemoryStream(bytes);
-                var img = Bitmap.FromStream(stream);
-                Console.WriteLine("valid image");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine("not valid image");
-                return false;
-            }
-            return true;
-        }
+        
         private void receivedText_TextChanged(object sender, TextChangedEventArgs e)
         {
 
         }
 
-        private MessageItem ByteArrayToObject(byte[] arrBytes)
-        {
-            MemoryStream memStream = new MemoryStream();
-            BinaryFormatter binForm = new BinaryFormatter();
-            memStream.Write(arrBytes, 0, arrBytes.Length);
-            memStream.Seek(0, SeekOrigin.Begin);
-            return (MessageItem)binForm.Deserialize(memStream);
-        }
 
         private void sendImage()
         {
@@ -337,41 +280,22 @@ namespace WpfApp2
                 //ImageMessageBox messageBox = new ImageMessageBox();
                 //messageBox.setInMessageImage(new BitmapImage(new Uri(op.FileName)));
                 //conversationBox.Items.Add(messageBox);
-                Bitmap bitmap = BitmapImage2Bitmap(new BitmapImage(new Uri(op.FileName)));
-                TcpClient client = new TcpClient(clientIP, portClient);
 
-                byte[] sendData = ImageToByte(bitmap);
+                MessageItem message = new MessageItem();
 
-                NetworkStream stream = client.GetStream();
+                var wc = new WebClient();
+                Image image = Image.FromStream(wc.OpenRead(new Uri(op.FileName)));
+                var imageInBase64 = Utilities.imageToBase64(image);
+                Console.WriteLine("image to send:" + imageInBase64);
 
-                stream.Write(sendData, 0, sendData.Length);
+                message.Image = imageInBase64;
+                Console.WriteLine("message.image: " + message.Image);
 
-                stream.Close();
-                client.Close();
-                Console.WriteLine("Sending image");
+                sendMessage(message);
             }
         }
 
-        public static byte[] ImageToByte(System.Drawing.Image img)
-        {
-            ImageConverter converter = new ImageConverter();
-            return (byte[])converter.ConvertTo(img, typeof(byte[]));
-        }
 
-        private Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
-        {
-            // BitmapImage bitmapImage = new BitmapImage(new Uri("../Images/test.png", UriKind.Relative));
-
-            using (MemoryStream outStream = new MemoryStream())
-            {
-                BitmapEncoder enc = new BmpBitmapEncoder();
-                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
-                enc.Save(outStream);
-                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(outStream);
-
-                return new Bitmap(bitmap);
-            }
-        }
         private void imageButton_Click(object sender, RoutedEventArgs e)
         {
             Console.WriteLine("Image button click");
@@ -380,15 +304,38 @@ namespace WpfApp2
 
         private void myIPMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            YourIPDialog ipDialog = new YourIPDialog(GetLocalIPV6Address());
+            YourIPDialog ipDialog = new YourIPDialog(hostIP);
             ipDialog.Show();
         }
 
         private void connectToNewIpMenuButton_Click(object sender, RoutedEventArgs e)
         {
             NewIPDialog ipDialog = new NewIPDialog();
-            ipDialog.Show();
+            
+            // Configure the dialog box
+            ipDialog.Owner = this;
 
+            // Open the dialog box modally
+            var result = ipDialog.ShowDialog();
+
+            if(ipDialog.DialogResult == true)
+            {
+                var senderIP = ipDialog.IP;
+                // TODO: implement connection to the client if the IP address is valid
+                Console.WriteLine("Sender: " + senderIP);
+                sendRequestToIP(senderIP);
+            }
+
+        }
+
+        private void sendRequestToIP(string ip)
+        {
+            MessageItem messageItem = new MessageItem();
+            messageItem.MessageText = messageBox.Text;
+            messageItem.UserName = this.hostIP;
+
+            clientIP = ip;
+            sendMessage(messageItem);
         }
 
         private void contactList_SelectionChanged(object sender, SelectionChangedEventArgs e)
