@@ -1,32 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Threading;
-using System.ComponentModel;
-
-using System.Windows;
-using System.Windows.Media.Imaging;
-
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Win32;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Collections;
 using System.Collections.ObjectModel;
 using WpfApp2.Model;
 using Image = System.Drawing.Image;
+using System.Collections;
+using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WpfApp2
 {
@@ -35,46 +20,119 @@ namespace WpfApp2
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ArrayList addresses = new ArrayList();
-        private ObservableCollection<Object> conversationList = new ObservableCollection<Object>();
+        //for viewing the people in listbox
+        private ObservableCollection<string> usersList = new ObservableCollection<string>();
+
+        //for showing the appropriate conversation
+        private ObservableCollection<MessageInterface> conversationList = new ObservableCollection<MessageInterface>();
+
+        //for linking the user to its conversation
+        private Dictionary<string, ArrayList> conversationDict = new Dictionary<string, ArrayList>();
 
         //for local testing
         string clientIP = "localhost";
         string hostIP = "localhost";
-        //string hostIP = "localhost";
 
         int port = 8080;
 
         public MainWindow()
         {
             InitializeComponent();
-            var t1 = new TextMessageBox("you", "Hello");
-            var t2 = new TextMessageBox("you", "Hello1");
-            var t3 = new TextMessageBox("you", "Hello2");
-            conversationList.Add(t1);
-            conversationList.Add(t2);
-            conversationList.Add(t3);
-            //hostIP = GetLocalIPAddress();
+
+            //adding some fake data
+            InitiateFakeData();
+
+            //load users to the users list box
+            LoadUsers();
+
+            //linking the listboxes to the collections
             conversationBox.ItemsSource = conversationList;
+            contactList.ItemsSource = usersList;
+
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
+            
 
-            ThreadStart childref = new ThreadStart(CallToChildThread);
-            Console.WriteLine("In Main: Creating the Child thread");
-            Thread childThread = new Thread(childref);
-            childThread.Start();
-
-            MessageItem testItem = new MessageItem();
-            Image newImage = Image.FromFile(@"C:\Users\Windows1\source\repos\WpfApp2\WpfApp2\Components\userIcon.png");
-            testItem.MessageText = "Hello World";
-            testItem.Image = (Utilities.imageToBase64(newImage));
-            string jsonTestItem = Utilities.convertMessageItemToJSON(testItem);
-            Console.WriteLine("json item: " + jsonTestItem);
-            MessageItem testItemRetrieved = Utilities.convertJSONToMessageItem(jsonTestItem);
-            Console.WriteLine("Retrieved item: " + testItemRetrieved.MessageText);
-            Console.WriteLine("Image item: " + testItemRetrieved.hasImage());
+            //starting new thread for the server
+            ThreadStart hostServer = new ThreadStart(StartHostServer);
+            Thread serverThread = new Thread(hostServer);
+            serverThread.Start();
 
             Console.WriteLine(GetLocalIPAddress());
 
+        }
+
+        private void InitiateFakeData()
+        {
+            
+            ArrayList adamConversation = new ArrayList();
+            MessageItem item1 = new MessageItem();
+            item1.MessageText = "Hello12";
+            MessageItem item2 = new MessageItem();
+            item2.MessageText = "Hello23";
+            MessageItem item3 = new MessageItem();
+            item3.MessageText = "Hello4";
+            MessageItem item4 = new MessageItem();
+            item4.MessageText = "Hello5";
+            adamConversation.Add(item1);
+            adamConversation.Add(item2);
+            adamConversation.Add(item3);
+            adamConversation.Add(item4);
+            conversationDict.Add("Adam", adamConversation);
+            ArrayList evaConversation = new ArrayList();
+            MessageItem item5 = new MessageItem();
+            item5.MessageText = "Hello14";
+            MessageItem item6 = new MessageItem();
+            item6.MessageText = "Hello45";
+            MessageItem item7 = new MessageItem();
+            item7.MessageText = "Hellsdfgo";
+            MessageItem item8 = new MessageItem();
+            item8.MessageText = "Helsdfgo";
+            evaConversation.Add(item5);
+            evaConversation.Add(item6);
+            evaConversation.Add(item7);
+            evaConversation.Add(item8);
+
+            conversationDict.Add("Eva", evaConversation);
+        }
+
+        private void LoadUsers()
+        {
+            usersList.Clear();
+            foreach (KeyValuePair<string, ArrayList> entry in conversationDict) {
+                usersList.Add(entry.Key);
+            }
+        }
+
+        private void ReloadUsers(IEnumerable<string> users)
+        {
+            usersList.Clear();
+            foreach(string user in users)
+            {
+                Console.WriteLine("User Reload: " + user);
+                usersList.Add(user);
+            }
+        }
+
+        private void ReloadMessagesToConversationBox(ArrayList array)
+        {
+            conversationList.Clear();
+            foreach(MessageItem message in array)
+            {
+                if (message.hasImage())
+                {
+                    ImageMessageBox box = new ImageMessageBox();
+                    Image image = Utilities.Base64ToImage(message.Image);
+                    BitmapSource source = Utilities.GetImageStream(image);
+                    box.setInMessageImage(source);
+                    conversationList.Add(box);
+                }
+                else
+                {
+                    TextMessageBox box = new TextMessageBox(message.UserName, message.MessageText);
+                    conversationList.Add(box);
+
+                }
+            }
         }
 
         //for real ipv6 address
@@ -97,9 +155,9 @@ namespace WpfApp2
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
-        public void CallToChildThread()
+        public void StartHostServer()
         {
-
+            
             IPAddress ip = Dns.GetHostEntry(hostIP).AddressList[0];
             hostIP = ip.ToString();
             TcpListener server = new TcpListener(ip, port);
@@ -123,7 +181,7 @@ namespace WpfApp2
                 client = server.AcceptTcpClient();
                 string address = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
                 Console.WriteLine("Client connected with IP {0}", ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-                if (!addresses.Contains(address))
+                if (!usersList.Contains(address))
                 {
                     showConnectionRequestDialogBox(address);
                 }
@@ -136,8 +194,10 @@ namespace WpfApp2
                     
                     this.Dispatcher.Invoke(() =>
                     {
-
-                        updateConversationBox(receivedBuffer, address);
+                        
+                        var json = Utilities.bytesToString(receivedBuffer);
+                        var message = Utilities.convertJSONToMessageItem(json);
+                        updateConversationBox(message, address);
                     });
                     Console.Read();
                 }
@@ -159,10 +219,9 @@ namespace WpfApp2
             switch (result)
             {
                 case MessageBoxResult.Yes:
-                    addresses.Add(address);
                     this.Dispatcher.Invoke(() =>
                     {
-                        contactList.Items.Add(address);
+                        usersList.Add(address);
                     });
                     
                     break;
@@ -193,7 +252,6 @@ namespace WpfApp2
                 var jsonObjectToSend = Utilities.convertMessageItemToJSON(messageItem);
                 Console.WriteLine("json to send: " + jsonObjectToSend);
                 byte[] sendData = Utilities.stringToBytes(jsonObjectToSend);
-                //byte[] sendData = Encoding.ASCII.GetBytes(messageBox.Text);
 
                 NetworkStream stream = client.GetStream();
                 Console.WriteLine("byte len sent: " + sendData.Length);
@@ -220,31 +278,18 @@ namespace WpfApp2
             // Display message box
             MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button, icon);
         }
-        private void updateConversationBox(byte[] bytes, string address)
+        private void updateConversationBox(MessageItem message, string address)
         {
 
-            Console.WriteLine("byte len recieved: " + bytes.Length);
-            var json = Utilities.bytesToString(bytes);
-            Console.WriteLine(json);
-            var message = Utilities.convertJSONToMessageItem(json);
-
-            Console.WriteLine("Started updating");
-            Console.WriteLine("Message image: "+ message.Image);
             if (message.hasImage())
             {
-                Image image = Utilities.Base64ToImage(message.Image);
-                /*using (MemoryStream ms = new MemoryStream(bytes))
-                {
-                    var decoder = BitmapDecoder.Create(ms,
-                        BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-                    image =  decoder.Frames[0];
-                }*/
-
                 ImageMessageBox messageBox = new ImageMessageBox();
+
+                Image image = Utilities.Base64ToImage(message.Image);
                 BitmapSource source = Utilities.GetImageStream(image);
+
                 messageBox.setInMessageImage(source);
                 conversationList.Add(messageBox);
-                //conversationBox.Items.Add(messageBox);
                 Console.Write("Have image");
 
             }
@@ -340,7 +385,56 @@ namespace WpfApp2
 
         private void contactList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            String user = (String)contactList.SelectedItem;
+            Console.WriteLine(user);
+            ReloadMessagesToConversationBox(conversationDict[user]);
+        }
 
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Console.WriteLine("TextField updated!");
+            if(searchContactsTextField.Text == "")
+            {
+                LoadUsers();
+            }
+        }
+
+        private void FindContactsFromSearchBox(string searchText)
+        {
+
+            Console.WriteLine("Seach text: " + searchText);
+            if(searchText == "")
+            {
+                LoadUsers();
+            }
+            else
+            {
+                try
+                {
+                    foreach(string user in usersList)
+                    {
+                        Console.WriteLine("User: " + user);
+                    }
+                    var foundContacts =
+                    from contact in usersList
+                    where (contact.StartsWith(searchText))
+                    select contact.ToString();
+                    Console.WriteLine("User: " + foundContacts);
+                    ReloadUsers(foundContacts);
+                }
+                catch(ArgumentNullException e)
+                {
+                    Console.WriteLine("Null string provided to the query");
+                }
+                
+            }
+            
+
+        }
+
+        private void searchContactsButton_Click(object sender, RoutedEventArgs e)
+        {
+            FindContactsFromSearchBox(searchContactsTextField.Text);
         }
     }
 }

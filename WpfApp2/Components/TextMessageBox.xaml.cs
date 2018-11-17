@@ -13,20 +13,28 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfApp2.Model;
 
 namespace WpfApp2
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class TextMessageBox : UserControl, INotifyPropertyChanged
+    public partial class TextMessageBox : UserControl, INotifyPropertyChanged, MessageInterface
     {
+        public string UserName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string MessageText { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string MessageTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Image { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public TextMessageBox(string fromUser, string messageText)
         {
             InitializeComponent();
             user.Text = fromUser;
             textBox.Text = messageText;
+            textBox.IsReadOnly = true;
             Console.WriteLine("Height: ");
+
         }
 
 
@@ -55,6 +63,11 @@ namespace WpfApp2
         private void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
 
+        }
+
+        public bool hasImage()
+        {
+            throw new NotImplementedException();
         }
     }
 }

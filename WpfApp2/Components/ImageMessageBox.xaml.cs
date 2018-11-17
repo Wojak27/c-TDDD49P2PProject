@@ -14,17 +14,28 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Controls;
+using WpfApp2.Model;
 
 namespace WpfApp2
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class ImageMessageBox : UserControl
+    public partial class ImageMessageBox : UserControl, MessageInterface
     {
         public ImageMessageBox()
         {
             InitializeComponent();
+        }
+
+        public string UserName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string MessageText { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string MessageTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Image { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public bool hasImage()
+        {
+            throw new NotImplementedException();
         }
 
         public void setInMessageImage(BitmapSource source)

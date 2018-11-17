@@ -24,8 +24,10 @@
                 <ListBox x:Name="conversationBox" ScrollViewer.CanContentScroll="False" HorizontalAlignment="Right" Height="362"  VerticalAlignment="Top" Width="576" Margin="0,0,10,0" ItemsSource="{Binding Path=TextMessageBox}" Grid.Column="1"/>
                 <Button x:Name="imageButton" Content="Send Image" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="96" Click="imageButton_Click" Margin="10,362,0,0" Height="33"/>
                 <TextBox x:Name="messageBox" HorizontalAlignment="Right" Height="33"  TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="576" Margin="0,362,10,0" Grid.Column="1"/>
-                <ListBox x:Name="contactList" HorizontalAlignment="Left" Height="326" Margin="10,31,0,0" VerticalAlignment="Top" Width="189" SelectionChanged="contactList_SelectionChanged" Grid.ColumnSpan="2"/>
+                <ListBox x:Name="contactList" HorizontalAlignment="Left" Height="295" Margin="10,62,0,0" VerticalAlignment="Top" Width="187" SelectionChanged="contactList_SelectionChanged" Grid.ColumnSpan="2"/>
                 <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="My contacts:" VerticalAlignment="Top"/>
+                <TextBox x:Name="searchContactsTextField" Grid.ColumnSpan="2" HorizontalAlignment="Left" Height="23" Margin="10,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="131" AutomationProperties.HelpText="Search name"/>
+                <Button x:Name="searchContactsButton" Content="Search" Grid.Column="1" HorizontalAlignment="Left" Margin="17,26,0,0" VerticalAlignment="Top" Width="51" Height="23" Click="searchContactsButton_Click"/>
 
             </Grid>
         </DockPanel>

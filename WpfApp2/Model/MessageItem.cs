@@ -6,11 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using WpfApp2.Model;
 
 namespace WpfApp2
 {
     [Serializable]
-    public class MessageItem
+    public class MessageItem: MessageInterface
     {
         private string _image;
 
