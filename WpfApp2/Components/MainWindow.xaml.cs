@@ -12,6 +12,7 @@ using System.Collections;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
+using WpfApp2.Tools;
 
 namespace WpfApp2
 {
@@ -59,7 +60,6 @@ namespace WpfApp2
             //load users to the users list box
             LoadUsers();
             
-
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
             
 
@@ -205,12 +205,21 @@ namespace WpfApp2
                     
                     this.Dispatcher.Invoke(() =>
                     {
+                        //thanks to this the integrity of the message is preserved
+                        try
+                        {
+                            var json = Utilities.bytesToString(receivedBuffer);
+                            var decapsulatedMessage = KarolProtocol.decapsulateMessage(json);
+                            var message = Utilities.convertJSONToMessageItem(decapsulatedMessage);
+                            conversationDict[address].Add(message);
+                            Utilities.saveInstanceOnDisk(conversationDict);
+                            updateConversationBox(message, address);
+                        }
+                        catch(IncorrectProtocolException e)
+                        {
+                            Console.WriteLine(e.ToString());
+                        }
                         
-                        var json = Utilities.bytesToString(receivedBuffer);
-                        var message = Utilities.convertJSONToMessageItem(json);
-                        conversationDict[address].Add(message);
-                        Utilities.saveInstanceOnDisk(conversationDict);
-                        updateConversationBox(message, address);
                     });
                     Console.Read();
                 }
@@ -264,7 +273,11 @@ namespace WpfApp2
                 messageItem.UserName = this.hostIP;
                 messageItem.MessageTime = DateTime.Now.ToString("h:mm:ss tt");
                 var jsonObjectToSend = Utilities.convertMessageItemToJSON(messageItem);
+                var encapsulatedMessage = KarolProtocol.encapsulteMessageInProtocol(jsonObjectToSend);
                 Console.WriteLine("json to send: " + jsonObjectToSend);
+
+                //byte[] sendData = Utilities.stringToBytes(encapsulatedMessage);
+                //for testing that it works
                 byte[] sendData = Utilities.stringToBytes(jsonObjectToSend);
 
                 NetworkStream stream = client.GetStream();
@@ -274,7 +287,7 @@ namespace WpfApp2
                 stream.Close();
                 client.Close();
             }
-            catch(Exception e)
+            catch(System.Net.Sockets.SocketException e)
             {
                 showNoValidIPDialogBox();
             }
@@ -301,11 +314,6 @@ namespace WpfApp2
                 //work for some reason :(
                 //can show in the lab
                 ImageMessageBox messageBox = new ImageMessageBox(message);
-
-                //Image image = Utilities.Base64ToImage(message.Image);
-                //BitmapSource source = Utilities.GetImageStream(image);
-
-                //messageBox.setInMessageImage(source);
                 
                 conversationList.Add(messageBox);
                 Console.Write("Have image");
@@ -313,7 +321,6 @@ namespace WpfApp2
             }
             else
             {
-                //TextMessageBox newMessage = new TextMessageBox(address, message.MessageText);
                 TextMessageBox newMessage = new TextMessageBox(message);
                 conversationList.Add(newMessage);
                 Console.WriteLine("Doesn't have image");

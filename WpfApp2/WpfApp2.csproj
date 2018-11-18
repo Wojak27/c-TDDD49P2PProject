@@ -88,6 +88,8 @@
     <Compile Include="Components\YourIPDialog.xaml.cs">
       <DependentUpon>YourIPDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Tools\KarolProtocol.cs" />
+    <Compile Include="Tools\IncorrectProtocolException.cs" />
     <Page Include="Components\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -146,9 +148,7 @@
   <ItemGroup>
     <Resource Include="userIcon.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tools\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Components\userIcon.png" />
   </ItemGroup>
