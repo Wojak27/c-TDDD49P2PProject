@@ -14,6 +14,5 @@ namespace WpfApp2.Model
         string MessageTime { get; set; }
         string Image { get; set; }
         
-        bool hasImage();
     }
 }

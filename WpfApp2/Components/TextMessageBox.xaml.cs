@@ -22,10 +22,10 @@ namespace WpfApp2
     /// </summary>
     public partial class TextMessageBox : UserControl, INotifyPropertyChanged, MessageInterface
     {
-        public string UserName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string MessageText { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string MessageTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Image { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string UserName { get; set; }
+        public string MessageText { get; set; }
+        public string MessageTime { get; set; }
+        public string Image { get { return null; } set {; } }
 
         public TextMessageBox(string fromUser, string messageText)
         {
@@ -35,6 +35,18 @@ namespace WpfApp2
             textBox.IsReadOnly = true;
             Console.WriteLine("Height: ");
 
+        }
+
+        public TextMessageBox()
+        {
+
+        }
+
+        public TextMessageBox(MessageItem messageItem)
+        {
+            UserName = messageItem.UserName;
+            MessageText = messageItem.MessageText;
+            MessageTime = messageItem.MessageTime;
         }
 
 
@@ -63,11 +75,6 @@ namespace WpfApp2
         private void textBox_TextChanged(object sender, TextChangedEventArgs e)
         {
 
-        }
-
-        public bool hasImage()
-        {
-            throw new NotImplementedException();
         }
     }
 }

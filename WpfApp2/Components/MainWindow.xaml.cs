@@ -29,6 +29,7 @@ namespace WpfApp2
         //for linking the user to its conversation
         private Dictionary<string, ArrayList> conversationDict = new Dictionary<string, ArrayList>();
 
+        private Dictionary<string, List<MessageItem>> conversationDict1 = new Dictionary<string, List<MessageItem>>();
         //for local testing
         string clientIP = "localhost";
         string hostIP = "localhost";
@@ -41,10 +42,14 @@ namespace WpfApp2
 
             //adding some fake data
             InitiateFakeData();
+            if (Utilities.hasSavedInstance())
+            {
+                LoadLastInstance();
+            }
+            
 
             //load users to the users list box
             LoadUsers();
-
             //linking the listboxes to the collections
             conversationBox.ItemsSource = conversationList;
             contactList.ItemsSource = usersList;
@@ -61,9 +66,14 @@ namespace WpfApp2
 
         }
 
+        private void LoadLastInstance()
+        {
+            conversationDict1 = Utilities.retrieveInstanceFromDisk();
+        }
+
         private void InitiateFakeData()
         {
-            
+
             ArrayList adamConversation = new ArrayList();
             MessageItem item1 = new MessageItem();
             item1.MessageText = "Hello12";
@@ -78,6 +88,7 @@ namespace WpfApp2
             adamConversation.Add(item3);
             adamConversation.Add(item4);
             conversationDict.Add("Adam", adamConversation);
+
             ArrayList evaConversation = new ArrayList();
             MessageItem item5 = new MessageItem();
             item5.MessageText = "Hello14";
@@ -97,9 +108,17 @@ namespace WpfApp2
 
         private void LoadUsers()
         {
+            conversationDict.Clear();
             usersList.Clear();
-            foreach (KeyValuePair<string, ArrayList> entry in conversationDict) {
+            foreach (KeyValuePair<string, List<MessageItem>> entry in conversationDict1) {
                 usersList.Add(entry.Key);
+                ArrayList items = new ArrayList();
+                foreach(MessageItem item in entry.Value)
+                {
+                    items.Add(item);
+                }
+                conversationDict.Add(entry.Key, items);
+                ReloadMessagesToConversationBox(items);
             }
         }
 
@@ -110,6 +129,7 @@ namespace WpfApp2
             {
                 Console.WriteLine("User Reload: " + user);
                 usersList.Add(user);
+                
             }
         }
 
@@ -118,21 +138,10 @@ namespace WpfApp2
             conversationList.Clear();
             foreach(MessageItem message in array)
             {
-                if (message.hasImage())
-                {
-                    ImageMessageBox box = new ImageMessageBox();
-                    Image image = Utilities.Base64ToImage(message.Image);
-                    BitmapSource source = Utilities.GetImageStream(image);
-                    box.setInMessageImage(source);
-                    conversationList.Add(box);
-                }
-                else
-                {
-                    TextMessageBox box = new TextMessageBox(message.UserName, message.MessageText);
-                    conversationList.Add(box);
-
-                }
+                updateConversationBox(message, message.UserName);
             }
+            conversationBox.SelectedIndex = conversationBox.Items.Count - 1;
+            conversationBox.ScrollIntoView(conversationBox.SelectedItem);
         }
 
         //for real ipv6 address
@@ -197,6 +206,8 @@ namespace WpfApp2
                         
                         var json = Utilities.bytesToString(receivedBuffer);
                         var message = Utilities.convertJSONToMessageItem(json);
+                        conversationDict[address].Add(message);
+                        Utilities.saveInstanceOnDisk(conversationDict);
                         updateConversationBox(message, address);
                     });
                     Console.Read();
@@ -221,7 +232,8 @@ namespace WpfApp2
                 case MessageBoxResult.Yes:
                     this.Dispatcher.Invoke(() =>
                     {
-                        usersList.Add(address);
+                        conversationDict.Add(address, new ArrayList());
+                        LoadUsers();
                     });
                     
                     break;
@@ -238,6 +250,7 @@ namespace WpfApp2
             MessageItem messageItem = new MessageItem();
             messageItem.MessageText = messageBox.Text;
             messageItem.UserName = this.hostIP;
+            messageItem.MessageTime = DateTime.Now.ToString("h:mm:ss tt");
             sendMessage(messageItem);
             messageBox.Text = "";
         }
@@ -283,12 +296,16 @@ namespace WpfApp2
 
             if (message.hasImage())
             {
+                //Tried with sending the MessageItem object to the ImageMessageBox but did't
+                //work for some reason :(
+                //can show in the lab
                 ImageMessageBox messageBox = new ImageMessageBox();
 
                 Image image = Utilities.Base64ToImage(message.Image);
                 BitmapSource source = Utilities.GetImageStream(image);
 
                 messageBox.setInMessageImage(source);
+                
                 conversationList.Add(messageBox);
                 Console.Write("Have image");
 
@@ -388,6 +405,7 @@ namespace WpfApp2
             String user = (String)contactList.SelectedItem;
             Console.WriteLine(user);
             ReloadMessagesToConversationBox(conversationDict[user]);
+            clientIP = user;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)

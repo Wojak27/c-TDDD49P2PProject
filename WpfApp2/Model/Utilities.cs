@@ -7,12 +7,17 @@ using System.Windows.Media.Imaging;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 
 namespace WpfApp2.Model
 {
 
     static class Utilities
     {
+        public static object JsonConvert { get; private set; }
+
         [DllImport("gdi32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteObject(IntPtr value);
@@ -37,6 +42,38 @@ namespace WpfApp2.Model
             return bImg;
         }
 
+        public static void saveInstanceOnDisk(Dictionary<string, ArrayList> dict )
+        {
+            Dictionary<string, List<MessageItem>> dictToSave = new Dictionary<string, List<MessageItem>>();
+            foreach (KeyValuePair<string, ArrayList> entry in dict)
+            {
+                var list = entry.Value.Cast<MessageItem>().ToList();
+                dictToSave.Add(entry.Key, list);
+            }
+            string json = new JavaScriptSerializer().Serialize(dictToSave);
+            System.IO.File.WriteAllText(@"savedInstance.txt", json);
+        }
+
+        public static bool hasSavedInstance()
+        {
+            try {
+                using (StreamReader r = new StreamReader("savedInstance.txt")) ;
+                return true;
+
+            }catch (FileNotFoundException e)
+            {
+                return false;
+            }
+        }
+
+        public static Dictionary<string, List<MessageItem>> retrieveInstanceFromDisk()
+        {
+            using (StreamReader r = new StreamReader("savedInstance.txt"))
+            {
+                string json = r.ReadToEnd();
+                return  new JavaScriptSerializer().Deserialize< Dictionary<string, List<MessageItem>>>(json);
+            }
+        }
         public static string convertMessageItemToJSON(MessageItem messageItem)
         {
             return new JavaScriptSerializer().Serialize(messageItem);
