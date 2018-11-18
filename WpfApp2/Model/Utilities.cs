@@ -42,15 +42,9 @@ namespace WpfApp2.Model
             return bImg;
         }
 
-        public static void saveInstanceOnDisk(Dictionary<string, ArrayList> dict )
+        public static void saveInstanceOnDisk(Dictionary<string, List<MessageItem>> dict)
         {
-            Dictionary<string, List<MessageItem>> dictToSave = new Dictionary<string, List<MessageItem>>();
-            foreach (KeyValuePair<string, ArrayList> entry in dict)
-            {
-                var list = entry.Value.Cast<MessageItem>().ToList();
-                dictToSave.Add(entry.Key, list);
-            }
-            string json = new JavaScriptSerializer().Serialize(dictToSave);
+            string json = new JavaScriptSerializer().Serialize(dict);
             System.IO.File.WriteAllText(@"savedInstance.txt", json);
         }
 

@@ -22,17 +22,17 @@ namespace WpfApp2
     /// </summary>
     public partial class TextMessageBox : UserControl, INotifyPropertyChanged, MessageInterface
     {
-        public string UserName { get; set; }
-        public string MessageText { get; set; }
-        public string MessageTime { get; set; }
+        public string UserName { get { return user.Text ; } set { user.Text = value; } }
+        public string MessageText { get { return textBox.Text; } set { textBox.Text = value ; } }
+        public string MessageTime { get {return timeTextBox.Text; } set {timeTextBox.Text = value; } }
         public string Image { get { return null; } set {; } }
 
         public TextMessageBox(string fromUser, string messageText)
         {
             InitializeComponent();
-            user.Text = fromUser;
-            textBox.Text = messageText;
             textBox.IsReadOnly = true;
+            UserName = fromUser;
+            MessageText = messageText;
             Console.WriteLine("Height: ");
 
         }
@@ -44,6 +44,8 @@ namespace WpfApp2
 
         public TextMessageBox(MessageItem messageItem)
         {
+            InitializeComponent();
+            textBox.IsReadOnly = true;
             UserName = messageItem.UserName;
             MessageText = messageItem.MessageText;
             MessageTime = messageItem.MessageTime;
@@ -51,16 +53,6 @@ namespace WpfApp2
 
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public void setText(String text)
-        {
-            textBox.Text = text;
-        }
-
-        public String getText()
-        {
-            return textBox.Text;
-        }
 
         public void setImage(Image image)
         {

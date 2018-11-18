@@ -16,6 +16,12 @@ namespace WpfApp2
             InitializeComponent();
         }
 
+        public ImageMessageBox(MessageItem message)
+        {
+            InitializeComponent();
+
+        }
+
         public string UserName { get ; set; }
         public string MessageText { get; set; }
         public string MessageTime { get; set; }

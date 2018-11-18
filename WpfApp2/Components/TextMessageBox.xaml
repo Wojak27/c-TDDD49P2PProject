@@ -11,6 +11,8 @@
         </Image>
         <TextBlock HorizontalAlignment="Left" Margin="0,-1,0,0" TextWrapping="Wrap" Text="From: " VerticalAlignment="Top"/>
         <TextBlock x:Name="user" HorizontalAlignment="Left" Margin="33,-1,0,0" TextWrapping="Wrap" Text="user" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="67,1,0,0" TextWrapping="Wrap" Text="Sent at:" VerticalAlignment="Top" FontSize="10"/>
+        <TextBlock x:Name="timeTextBox" HorizontalAlignment="Left" Margin="105,1,0,0" TextWrapping="Wrap" Text="time" VerticalAlignment="Top" FontSize="10"/>
 
     </Grid>
 </UserControl>

@@ -27,9 +27,10 @@ namespace WpfApp2
         private ObservableCollection<MessageInterface> conversationList = new ObservableCollection<MessageInterface>();
 
         //for linking the user to its conversation
-        private Dictionary<string, ArrayList> conversationDict = new Dictionary<string, ArrayList>();
+        //private Dictionary<string, ArrayList> conversationDict = new Dictionary<string, ArrayList>();
 
-        private Dictionary<string, List<MessageItem>> conversationDict1 = new Dictionary<string, List<MessageItem>>();
+        //for linking the user to its conversation
+        private Dictionary<string, List<MessageItem>> conversationDict = new Dictionary<string, List<MessageItem>>();
         //for local testing
         string clientIP = "localhost";
         string hostIP = "localhost";
@@ -40,19 +41,21 @@ namespace WpfApp2
         {
             InitializeComponent();
 
-            //adding some fake data
-            InitiateFakeData();
+            
             if (Utilities.hasSavedInstance())
             {
                 LoadLastInstance();
             }
+            //adding some fake data
+            //InitiateFakeData();
             
-
-            //load users to the users list box
-            LoadUsers();
             //linking the listboxes to the collections
             conversationBox.ItemsSource = conversationList;
             contactList.ItemsSource = usersList;
+
+            //load users to the users list box
+            LoadUsers();
+            
 
             conversationBox.HorizontalContentAlignment = HorizontalAlignment.Right;
             
@@ -66,15 +69,16 @@ namespace WpfApp2
 
         }
 
+        //Load instatnce for list
         private void LoadLastInstance()
-        {
-            conversationDict1 = Utilities.retrieveInstanceFromDisk();
+        { 
+            conversationDict = Utilities.retrieveInstanceFromDisk();
         }
 
         private void InitiateFakeData()
         {
 
-            ArrayList adamConversation = new ArrayList();
+            List<MessageItem> adamConversation = new List<MessageItem>();
             MessageItem item1 = new MessageItem();
             item1.MessageText = "Hello12";
             MessageItem item2 = new MessageItem();
@@ -89,7 +93,7 @@ namespace WpfApp2
             adamConversation.Add(item4);
             conversationDict.Add("Adam", adamConversation);
 
-            ArrayList evaConversation = new ArrayList();
+            List<MessageItem> evaConversation = new List<MessageItem>();
             MessageItem item5 = new MessageItem();
             item5.MessageText = "Hello14";
             MessageItem item6 = new MessageItem();
@@ -106,19 +110,13 @@ namespace WpfApp2
             conversationDict.Add("Eva", evaConversation);
         }
 
+        //Load users with list
         private void LoadUsers()
         {
-            conversationDict.Clear();
             usersList.Clear();
-            foreach (KeyValuePair<string, List<MessageItem>> entry in conversationDict1) {
+            foreach (KeyValuePair<string, List<MessageItem>> entry in conversationDict)
+            {
                 usersList.Add(entry.Key);
-                ArrayList items = new ArrayList();
-                foreach(MessageItem item in entry.Value)
-                {
-                    items.Add(item);
-                }
-                conversationDict.Add(entry.Key, items);
-                ReloadMessagesToConversationBox(items);
             }
         }
 
@@ -133,7 +131,7 @@ namespace WpfApp2
             }
         }
 
-        private void ReloadMessagesToConversationBox(ArrayList array)
+        private void ReloadMessagesToConversationBox(List<MessageItem> array)
         {
             conversationList.Clear();
             foreach(MessageItem message in array)
@@ -232,7 +230,7 @@ namespace WpfApp2
                 case MessageBoxResult.Yes:
                     this.Dispatcher.Invoke(() =>
                     {
-                        conversationDict.Add(address, new ArrayList());
+                        conversationDict.Add(address, new List<MessageItem>());
                         LoadUsers();
                     });
                     
@@ -339,9 +337,6 @@ namespace WpfApp2
             if (op.ShowDialog() == true)
             {
                 Console.WriteLine("Showing dialog");
-                //ImageMessageBox messageBox = new ImageMessageBox();
-                //messageBox.setInMessageImage(new BitmapImage(new Uri(op.FileName)));
-                //conversationBox.Items.Add(messageBox);
 
                 MessageItem message = new MessageItem();
 
@@ -404,8 +399,12 @@ namespace WpfApp2
         {
             String user = (String)contactList.SelectedItem;
             Console.WriteLine(user);
-            ReloadMessagesToConversationBox(conversationDict[user]);
-            clientIP = user;
+            if(user != null)
+            {
+                ReloadMessagesToConversationBox(conversationDict[user]);
+                clientIP = user;
+            }
+            
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
