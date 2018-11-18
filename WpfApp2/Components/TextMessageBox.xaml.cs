@@ -49,6 +49,7 @@ namespace WpfApp2
             UserName = messageItem.UserName;
             MessageText = messageItem.MessageText;
             MessageTime = messageItem.MessageTime;
+            Console.WriteLine("time: "+MessageTime);
         }
 
 

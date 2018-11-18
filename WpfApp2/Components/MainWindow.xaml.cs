@@ -21,7 +21,10 @@ namespace WpfApp2
     public partial class MainWindow : Window
     {
         //for viewing the people in listbox
-        private ObservableCollection<string> usersList = new ObservableCollection<string>();
+        private ObservableCollection<string> usersObservableList = new ObservableCollection<string>();
+
+        //for query
+        private ArrayList usersList = new ArrayList();
 
         //for showing the appropriate conversation
         private ObservableCollection<MessageInterface> conversationList = new ObservableCollection<MessageInterface>();
@@ -51,7 +54,7 @@ namespace WpfApp2
             
             //linking the listboxes to the collections
             conversationBox.ItemsSource = conversationList;
-            contactList.ItemsSource = usersList;
+            contactList.ItemsSource = usersObservableList;
 
             //load users to the users list box
             LoadUsers();
@@ -113,20 +116,21 @@ namespace WpfApp2
         //Load users with list
         private void LoadUsers()
         {
-            usersList.Clear();
+            usersObservableList.Clear();
             foreach (KeyValuePair<string, List<MessageItem>> entry in conversationDict)
             {
+                usersObservableList.Add(entry.Key);
                 usersList.Add(entry.Key);
             }
         }
 
         private void ReloadUsers(IEnumerable<string> users)
         {
-            usersList.Clear();
+            usersObservableList.Clear();
             foreach(string user in users)
             {
                 Console.WriteLine("User Reload: " + user);
-                usersList.Add(user);
+                usersObservableList.Add(user);
                 
             }
         }
@@ -188,7 +192,7 @@ namespace WpfApp2
                 client = server.AcceptTcpClient();
                 string address = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
                 Console.WriteLine("Client connected with IP {0}", ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString());
-                if (!usersList.Contains(address))
+                if (!usersObservableList.Contains(address))
                 {
                     showConnectionRequestDialogBox(address);
                 }
@@ -247,8 +251,6 @@ namespace WpfApp2
         {
             MessageItem messageItem = new MessageItem();
             messageItem.MessageText = messageBox.Text;
-            messageItem.UserName = this.hostIP;
-            messageItem.MessageTime = DateTime.Now.ToString("h:mm:ss tt");
             sendMessage(messageItem);
             messageBox.Text = "";
         }
@@ -259,7 +261,8 @@ namespace WpfApp2
             try
             {
                 TcpClient client = new TcpClient(clientIP, port);
-
+                messageItem.UserName = this.hostIP;
+                messageItem.MessageTime = DateTime.Now.ToString("h:mm:ss tt");
                 var jsonObjectToSend = Utilities.convertMessageItemToJSON(messageItem);
                 Console.WriteLine("json to send: " + jsonObjectToSend);
                 byte[] sendData = Utilities.stringToBytes(jsonObjectToSend);
@@ -297,12 +300,12 @@ namespace WpfApp2
                 //Tried with sending the MessageItem object to the ImageMessageBox but did't
                 //work for some reason :(
                 //can show in the lab
-                ImageMessageBox messageBox = new ImageMessageBox();
+                ImageMessageBox messageBox = new ImageMessageBox(message);
 
-                Image image = Utilities.Base64ToImage(message.Image);
-                BitmapSource source = Utilities.GetImageStream(image);
+                //Image image = Utilities.Base64ToImage(message.Image);
+                //BitmapSource source = Utilities.GetImageStream(image);
 
-                messageBox.setInMessageImage(source);
+                //messageBox.setInMessageImage(source);
                 
                 conversationList.Add(messageBox);
                 Console.Write("Have image");
@@ -310,7 +313,8 @@ namespace WpfApp2
             }
             else
             {
-                TextMessageBox newMessage = new TextMessageBox(address, message.MessageText);
+                //TextMessageBox newMessage = new TextMessageBox(address, message.MessageText);
+                TextMessageBox newMessage = new TextMessageBox(message);
                 conversationList.Add(newMessage);
                 Console.WriteLine("Doesn't have image");
             }
@@ -428,15 +432,16 @@ namespace WpfApp2
             {
                 try
                 {
-                    foreach(string user in usersList)
+                    string[] array = usersList.ToArray(typeof(string)) as string[];
+                    foreach (string user in array)
                     {
                         Console.WriteLine("User: " + user);
                     }
                     var foundContacts =
-                    from contact in usersList
+                    from contact in array
                     where (contact.StartsWith(searchText))
                     select contact.ToString();
-                    Console.WriteLine("User: " + foundContacts);
+                    Console.WriteLine("User query: " + foundContacts);
                     ReloadUsers(foundContacts);
                 }
                 catch(ArgumentNullException e)

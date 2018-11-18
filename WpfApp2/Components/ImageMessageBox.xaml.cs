@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -19,12 +20,17 @@ namespace WpfApp2
         public ImageMessageBox(MessageItem message)
         {
             InitializeComponent();
-
+            UserName = message.UserName;
+            MessageTime = message.MessageTime;
+            System.Drawing.Image image = Utilities.Base64ToImage(message.Image);
+            BitmapSource source = Utilities.GetImageStream(image);
+            setInMessageImage(source);
+            Console.WriteLine("time image: " + MessageTime);
         }
-
-        public string UserName { get ; set; }
+        
+        public string UserName { get { return userNameTextField.Text; } set { userNameTextField.Text = value; } }
         public string MessageText { get; set; }
-        public string MessageTime { get; set; }
+        public string MessageTime { get { return timeTextBoxImageMessage.Text; } set { timeTextBoxImageMessage.Text = value; } }
         public string Image { get { return null; } set { ; } }
 
         public void setInMessageImage(BitmapSource source)
